@@ -34,7 +34,7 @@ export default function EventListScreen({ navigation }) {
       <Text style={styles.header}>Upcoming Events</Text>
       <FlatList
         data={events}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()} // Ensure the key is unique
         renderItem={({ item }) => (
           <View style={styles.eventCard}>
             <View style={styles.eventDetails}>
