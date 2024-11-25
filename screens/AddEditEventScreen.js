@@ -22,7 +22,7 @@ export default function AddEditEventScreen({ route, navigation }) {
           title,
           description,
           date,
-          createdBy: auth.currentUser?.uid, // Save the creator's UID
+          createdBy: auth.currentUser?.uid,
         });
       }
       Alert.alert('Success', 'Event saved successfully!');
@@ -34,6 +34,7 @@ export default function AddEditEventScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.header}>{eventId ? 'Edit Event' : 'Add Event'}</Text>
       <TextInput
         style={styles.input}
         placeholder="Title"
@@ -48,7 +49,7 @@ export default function AddEditEventScreen({ route, navigation }) {
       />
       <TextInput
         style={styles.input}
-        placeholder="Date"
+        placeholder="Date (YYYY-MM-DD)"
         value={date}
         onChangeText={setDate}
       />
@@ -61,12 +62,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: '#f8f9fa',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#ccc',
+    borderRadius: 8,
     padding: 10,
     marginBottom: 16,
-    borderRadius: 8,
+    backgroundColor: '#fff',
   },
 });
