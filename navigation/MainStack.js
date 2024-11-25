@@ -1,44 +1,43 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Button } from 'react-native';
-import { auth } from '../firebase';
+import { createStackNavigator } from '@react-navigation/stack';
 import EventListScreen from '../screens/EventListScreen';
 import FavoriteEventsScreen from '../screens/FavoriteEventsScreen';
+import AddEditEventScreen from '../screens/AddEditEventScreen';
+import { Button } from 'react-native';
+import { auth } from '../firebase';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
-export default function MainStack({ navigation }) {
-  const handleLogout = async () => {
-    try {
-      await auth.signOut(); // Signs out the user
-      navigation.replace('Auth'); // Navigates to the login screen
-    } catch (error) {
-      console.error('Logout Error:', error.message);
-    }
-  };
-
+function EventStack() {
   return (
-    <Tab.Navigator>
-      <Tab.Screen
+    <Stack.Navigator>
+      <Stack.Screen
         name="EventList"
         component={EventListScreen}
         options={{
-          title: 'Events',
           headerRight: () => (
-            <Button title="Logout" onPress={handleLogout} />
+            <Button title="Logout" onPress={() => auth.signOut()} />
           ),
         }}
       />
-      <Tab.Screen
-        name="FavoriteEvents"
-        component={FavoriteEventsScreen}
-        options={{
-          title: 'Favorites',
-          headerRight: () => (
-            <Button title="Logout" onPress={handleLogout} />
-          ),
-        }}
+      <Stack.Screen
+        name="AddEditEvent"
+        component={AddEditEventScreen}
+        options={({ route }) => ({
+          title: route.params?.eventId ? 'Edit Event' : 'Add Event',
+        })}
       />
+    </Stack.Navigator>
+  );
+}
+
+export default function MainStack() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen name="Events" component={EventStack} />
+      <Tab.Screen name="Favorites" component={FavoriteEventsScreen} />
     </Tab.Navigator>
   );
 }
