@@ -11,7 +11,7 @@ export default function FavoriteEventsScreen() {
 
     const unsubscribe = onSnapshot(userFavoritesRef, (snapshot) => {
       const fetchedFavorites = snapshot.docs.map((doc) => ({
-        id: doc.id,
+        id: doc.id, // Ensure id is used here
         ...doc.data(),
       }));
       setFavorites(fetchedFavorites);
@@ -34,7 +34,7 @@ export default function FavoriteEventsScreen() {
     <View style={styles.container}>
       <FlatList
         data={favorites}
-        keyExtractor={(item) => item.id.toString()} // Ensure unique keys
+        keyExtractor={(item) => item.id} // Use item.id to ensure unique keys
         renderItem={({ item }) => (
           <View style={styles.eventCard}>
             <Text style={styles.eventTitle}>{item.title}</Text>
