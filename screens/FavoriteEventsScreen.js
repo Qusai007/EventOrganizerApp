@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Button } from 'react-native';
 import { firestore, auth } from '../firebase';
-import { collection, doc, onSnapshot, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 
 export default function FavoriteEventsScreen() {
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    const userFavoritesRef = collection(
-      firestore,
-      `users/${auth.currentUser?.uid}/favorites`
-    );
+    const userFavoritesRef = collection(firestore, `users/${auth.currentUser?.uid}/favorites`);
 
     const unsubscribe = onSnapshot(userFavoritesRef, (snapshot) => {
       const fetchedFavorites = snapshot.docs.map((doc) => ({
