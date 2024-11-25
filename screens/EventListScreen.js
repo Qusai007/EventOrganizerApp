@@ -16,7 +16,7 @@ export default function EventListScreen({ navigation }) {
       setEvents(fetchedEvents);
     });
 
-    return unsubscribe; // Cleanup listener
+    return unsubscribe;
   }, []);
 
   const handleAddToFavorites = async (event) => {
@@ -34,7 +34,7 @@ export default function EventListScreen({ navigation }) {
       <Text style={styles.header}>Upcoming Events</Text>
       <FlatList
         data={events}
-        keyExtractor={(item) => item.id.toString()} // Ensure unique keys
+        keyExtractor={(item) => item.id.toString()} // Unique key for each item
         renderItem={({ item }) => (
           <View style={styles.eventCard}>
             <View style={styles.eventDetails}>
