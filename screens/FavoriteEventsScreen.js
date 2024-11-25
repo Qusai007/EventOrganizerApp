@@ -32,9 +32,10 @@ export default function FavoriteEventsScreen() {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.header}>Favorite Events</Text>
       <FlatList
         data={favorites}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id.toString()} // Ensure the key is unique
         renderItem={({ item }) => (
           <View style={styles.eventCard}>
             <Text style={styles.eventTitle}>{item.title}</Text>
@@ -56,6 +57,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#f8f9fa',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
   },
   eventCard: {
     padding: 16,
