@@ -1,149 +1,65 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { firestore, auth } from '../firebase';
-import { collection, query, onSnapshot, addDoc } from 'firebase/firestore';
+import { View, Text, FlatList, Button, StyleSheet } from 'react-native';
+import { firestore } from '../firebase';
+import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 
-export default function EventListScreen({ navigation }) {
+const EventListScreen = ({ navigation }) => {
   const [events, setEvents] = useState([]);
 
-  useEffect(() => {
-    const q = query(collection(firestore, 'events'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedEvents = snapshot.docs.map((doc) => ({
+  const fetchEvents = async () => {
+    try {
+      const eventsRef = collection(firestore, 'events');
+      const querySnapshot = await getDocs(eventsRef);
+      const eventsData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setEvents(fetchedEvents);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  const handleAddToFavorites = async (event) => {
-    try {
-      const favoritesRef = collection(firestore, `users/${auth.currentUser?.uid}/favorites`);
-      await addDoc(favoritesRef, event);
-      Alert.alert('Success', 'Event added to favorites!');
+      setEvents(eventsData);
     } catch (error) {
-      Alert.alert('Error', error.message);
+      console.error('Error fetching events:', error);
     }
   };
+
+  const deleteEvent = async (id) => {
+    try {
+      const eventDoc = doc(firestore, 'events', id);
+      await deleteDoc(eventDoc);
+      fetchEvents();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Upcoming Events</Text>
       <FlatList
         data={events}
-        keyExtractor={(item) => item.id.toString()} // Unique key for each item
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.eventCard}>
-            <View style={styles.eventDetails}>
-              <Text style={styles.eventTitle}>{item.title}</Text>
-              <Text style={styles.eventDate}>{item.date}</Text>
-            </View>
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={styles.favoriteButton}
-                onPress={() => handleAddToFavorites(item)}
-              >
-                <Text style={styles.favoriteButtonText}>Favorite</Text>
-              </TouchableOpacity>
-              {item.createdBy === auth.currentUser?.uid && (
-                <TouchableOpacity
-                  style={styles.editButton}
-                  onPress={() =>
-                    navigation.navigate('AddEditEvent', { event: item, eventId: item.id })
-                  }
-                >
-                  <Text style={styles.editButtonText}>Edit</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+            <Text style={styles.eventTitle}>{item.title}</Text>
+            <Text>{new Date(item.date).toDateString()}</Text>
+            <Button
+              title="Edit"
+              onPress={() => navigation.navigate('AddEditEvent', { ...item, isEditing: true })}
+            />
+            <Button title="Delete" onPress={() => deleteEvent(item.id)} />
           </View>
         )}
       />
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.navigate('AddEditEvent')}
-      >
-        <Text style={styles.addButtonText}>Add Event</Text>
-      </TouchableOpacity>
+      <Button title="Add Event" onPress={() => navigation.navigate('AddEditEvent')} />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#f8f9fa',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
+  container: { padding: 16 },
+  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
   eventCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     padding: 16,
-    marginBottom: 8,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  eventDetails: {
-    flex: 1,
-  },
-  eventTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  eventDate: {
-    fontSize: 14,
-    color: '#666',
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  favoriteButton: {
-    marginRight: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: '#28a745',
-    borderRadius: 6,
-  },
-  favoriteButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  editButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: '#007bff',
-    borderRadius: 6,
-  },
-  editButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  addButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
+    borderWidth:
