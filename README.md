@@ -10,7 +10,7 @@ This is a React Native app for organizing and managing events, featuring:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/EventOrganizerApp.git
+   git clone https://github.com/Qusai007/EventOrganizerApp.git
    cd EventOrganizerApp
 Install dependencies:
 
