@@ -1,23 +1,48 @@
-import React from 'react';
-import { View, Text, Button, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Button } from 'react-native';
+import { auth, firestore } from '../firebase';
+import { collection, query, where, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 
 export default function EventListScreen({ navigation }) {
-  const dummyEvents = [
-    { id: '1', title: 'React Native Workshop', date: '2024-12-01' },
-    { id: '2', title: 'Expo Basics', date: '2024-12-05' },
-  ];
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    const q = query(collection(firestore, 'events'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedEvents = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setEvents(fetchedEvents);
+    });
+
+    return unsubscribe; // Cleanup listener
+  }, []);
+
+  const handleDelete = async (eventId) => {
+    const eventRef = doc(firestore, 'events', eventId);
+    await deleteDoc(eventRef);
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Event List</Text>
       <FlatList
-        data={dummyEvents}
+        data={events}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.eventCard}>
+          <View style={styles.eventCard}>
             <Text style={styles.eventTitle}>{item.title}</Text>
-            <Text style={styles.eventDate}>{item.date}</Text>
-          </TouchableOpacity>
+            <Text>{item.date}</Text>
+            <Button
+              title="Edit"
+              onPress={() =>
+                navigation.navigate('AddEditEvent', { event: item, eventId: item.id })
+              }
+            />
+            {item.createdBy === auth.currentUser?.uid && (
+              <Button title="Delete" onPress={() => handleDelete(item.id)} />
+            )}
+          </View>
         )}
       />
       <TouchableOpacity
@@ -26,6 +51,7 @@ export default function EventListScreen({ navigation }) {
       >
         <Text style={styles.addButtonText}>Add Event</Text>
       </TouchableOpacity>
+      <Button title="Log Out" onPress={() => auth.signOut()} />
     </View>
   );
 }
@@ -34,18 +60,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f8f9fa',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 16,
   },
   eventCard: {
-    backgroundColor: '#ffffff',
     padding: 16,
     marginBottom: 8,
+    backgroundColor: '#f9f9f9',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
@@ -53,10 +72,6 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  eventDate: {
-    fontSize: 14,
-    color: '#888',
   },
   addButton: {
     backgroundColor: '#007bff',
