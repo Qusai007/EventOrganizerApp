@@ -1,15 +1,17 @@
 import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import EventListScreen from '../screens/EventListScreen';
 import FavoriteEventsScreen from '../screens/FavoriteEventsScreen';
+import AddEditEventScreen from '../screens/AddEditEventScreen'; 
 
-const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
 export default function MainStack() {
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Events" component={EventListScreen} />
-      <Tab.Screen name="Favorites" component={FavoriteEventsScreen} />
-    </Tab.Navigator>
+    <Stack.Navigator>
+      <Stack.Screen name="EventList" component={EventListScreen} />
+      <Stack.Screen name="Favorites" component={FavoriteEventsScreen} />
+      <Stack.Screen name="AddEditEvent" component={AddEditEventScreen} /> 
+    </Stack.Navigator>
   );
 }
