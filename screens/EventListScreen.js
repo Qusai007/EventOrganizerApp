@@ -62,4 +62,11 @@ const styles = StyleSheet.create({
   header: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
   eventCard: {
     padding: 16,
-    borderWidth:
+    borderWidth: 1,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  eventTitle: { fontSize: 18, fontWeight: 'bold' },
+});
+
+export default EventListScreen;
