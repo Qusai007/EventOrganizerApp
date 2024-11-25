@@ -11,23 +11,22 @@ export default function FavoriteEventsScreen() {
 
     const unsubscribe = onSnapshot(userFavoritesRef, (snapshot) => {
       const fetchedFavorites = snapshot.docs.map((doc) => ({
-        id: doc.id, // Ensure id is included
+        id: doc.id,
         ...doc.data(),
       }));
       setFavorites(fetchedFavorites);
     });
 
-    return unsubscribe; // Cleanup listener
+    return unsubscribe;
   }, []);
 
   const handleRemoveFavorite = async (id) => {
     try {
       const favoriteRef = doc(firestore, `users/${auth.currentUser?.uid}/favorites`, id);
-      await deleteDoc(favoriteRef); // Delete the document
-      setFavorites((prevFavorites) => prevFavorites.filter((item) => item.id !== id)); // Update UI
+      await deleteDoc(favoriteRef);
+      setFavorites((prevFavorites) => prevFavorites.filter((item) => item.id !== id));
       Alert.alert('Success', 'Favorite removed successfully!');
     } catch (error) {
-      console.error('Error removing favorite:', error);
       Alert.alert('Error', error.message);
     }
   };
@@ -36,7 +35,7 @@ export default function FavoriteEventsScreen() {
     <View style={styles.container}>
       <FlatList
         data={favorites}
-        keyExtractor={(item, index) => item.id ? item.id : index.toString()} // Unique keys
+        keyExtractor={(item) => item.id.toString()} // Unique key for each item
         renderItem={({ item }) => (
           <View style={styles.eventCard}>
             <Text style={styles.eventTitle}>{item.title}</Text>
