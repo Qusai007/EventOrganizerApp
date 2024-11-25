@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { firestore, auth } from '../firebase';
-import { collection, query, onSnapshot } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc } from 'firebase/firestore';
 
 export default function EventListScreen({ navigation }) {
   const [events, setEvents] = useState([]);
@@ -19,6 +19,16 @@ export default function EventListScreen({ navigation }) {
     return unsubscribe; // Cleanup listener
   }, []);
 
+  const handleAddToFavorites = async (event) => {
+    try {
+      const favoritesRef = collection(firestore, `users/${auth.currentUser?.uid}/favorites`);
+      await addDoc(favoritesRef, event);
+      Alert.alert('Success', 'Event added to favorites!');
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Upcoming Events</Text>
@@ -31,16 +41,24 @@ export default function EventListScreen({ navigation }) {
               <Text style={styles.eventTitle}>{item.title}</Text>
               <Text style={styles.eventDate}>{item.date}</Text>
             </View>
-            {item.createdBy === auth.currentUser?.uid && (
+            <View style={styles.actionButtons}>
               <TouchableOpacity
-                style={styles.editButton}
-                onPress={() =>
-                  navigation.navigate('AddEditEvent', { event: item, eventId: item.id })
-                }
+                style={styles.favoriteButton}
+                onPress={() => handleAddToFavorites(item)}
               >
-                <Text style={styles.editButtonText}>Edit</Text>
+                <Text style={styles.favoriteButtonText}>Favorite</Text>
               </TouchableOpacity>
-            )}
+              {item.createdBy === auth.currentUser?.uid && (
+                <TouchableOpacity
+                  style={styles.editButton}
+                  onPress={() =>
+                    navigation.navigate('AddEditEvent', { event: item, eventId: item.id })
+                  }
+                >
+                  <Text style={styles.editButtonText}>Edit</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         )}
       />
@@ -93,6 +111,22 @@ const styles = StyleSheet.create({
   eventDate: {
     fontSize: 14,
     color: '#666',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  favoriteButton: {
+    marginRight: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#28a745',
+    borderRadius: 6,
+  },
+  favoriteButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   editButton: {
     paddingVertical: 6,
