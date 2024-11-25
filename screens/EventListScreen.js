@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Button } from 'react-native';
+import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { auth, firestore } from '../firebase';
-import { collection, query, where, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, doc, deleteDoc } from 'firebase/firestore';
 
 export default function EventListScreen({ navigation }) {
   const [events, setEvents] = useState([]);
@@ -19,9 +19,14 @@ export default function EventListScreen({ navigation }) {
     return unsubscribe; // Cleanup listener
   }, []);
 
-  const handleDelete = async (eventId) => {
-    const eventRef = doc(firestore, 'events', eventId);
-    await deleteDoc(eventRef);
+  const handleAddToFavorites = async (event) => {
+    try {
+      const favoritesRef = collection(firestore, `users/${auth.currentUser?.uid}/favorites`);
+      await addDoc(favoritesRef, event);
+      Alert.alert('Success', 'Event added to favorites!');
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   };
 
   return (
@@ -34,14 +39,13 @@ export default function EventListScreen({ navigation }) {
             <Text style={styles.eventTitle}>{item.title}</Text>
             <Text>{item.date}</Text>
             <Button
-              title="Edit"
-              onPress={() =>
-                navigation.navigate('AddEditEvent', { event: item, eventId: item.id })
-              }
+              title="Favorite"
+              onPress={() => handleAddToFavorites(item)}
             />
-            {item.createdBy === auth.currentUser?.uid && (
-              <Button title="Delete" onPress={() => handleDelete(item.id)} />
-            )}
+            <Button
+              title="Edit"
+              onPress={() => navigation.navigate('AddEditEvent', { event: item, eventId: item.id })}
+            />
           </View>
         )}
       />
@@ -51,7 +55,6 @@ export default function EventListScreen({ navigation }) {
       >
         <Text style={styles.addButtonText}>Add Event</Text>
       </TouchableOpacity>
-      <Button title="Log Out" onPress={() => auth.signOut()} />
     </View>
   );
 }
