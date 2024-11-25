@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { firestore, auth } from '../firebase';
 import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 
@@ -23,7 +23,7 @@ export default function FavoriteEventsScreen() {
   const handleRemoveFavorite = async (id) => {
     try {
       const favoriteRef = doc(firestore, `users/${auth.currentUser?.uid}/favorites`, id);
-      await deleteDoc(favoriteRef);
+      await deleteDoc(favoriteRef); // Deletes the favorite document
       Alert.alert('Success', 'Favorite removed successfully!');
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -32,10 +32,9 @@ export default function FavoriteEventsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Favorite Events</Text>
       <FlatList
         data={favorites}
-        keyExtractor={(item) => item.id.toString()} // Ensure the key is unique
+        keyExtractor={(item) => item.id.toString()} // Ensure unique keys
         renderItem={({ item }) => (
           <View style={styles.eventCard}>
             <Text style={styles.eventTitle}>{item.title}</Text>
@@ -57,12 +56,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#f8f9fa',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 16,
   },
   eventCard: {
     padding: 16,
