@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Button } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Button, Alert } from 'react-native';
 import { firestore, auth } from '../firebase';
 import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 
@@ -21,8 +21,13 @@ export default function FavoriteEventsScreen() {
   }, []);
 
   const handleRemoveFavorite = async (id) => {
-    const favoriteRef = doc(firestore, `users/${auth.currentUser?.uid}/favorites`, id);
-    await deleteDoc(favoriteRef);
+    try {
+      const favoriteRef = doc(firestore, `users/${auth.currentUser?.uid}/favorites`, id);
+      await deleteDoc(favoriteRef); // Deletes the favorite document
+      Alert.alert('Success', 'Event removed from favorites!');
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   };
 
   return (
