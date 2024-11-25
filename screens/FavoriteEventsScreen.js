@@ -1,22 +1,43 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, StyleSheet, Button } from 'react-native';
+import { firestore, auth } from '../firebase';
+import { collection, doc, onSnapshot, deleteDoc } from 'firebase/firestore';
 
 export default function FavoriteEventsScreen() {
-  const favoriteEvents = [
-    { id: '1', title: 'React Native Workshop', date: '2024-12-01' },
-  ];
+  const [favorites, setFavorites] = useState([]);
+
+  useEffect(() => {
+    const userFavoritesRef = collection(
+      firestore,
+      `users/${auth.currentUser?.uid}/favorites`
+    );
+
+    const unsubscribe = onSnapshot(userFavoritesRef, (snapshot) => {
+      const fetchedFavorites = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setFavorites(fetchedFavorites);
+    });
+
+    return unsubscribe; // Cleanup listener
+  }, []);
+
+  const handleRemoveFavorite = async (id) => {
+    const favoriteRef = doc(firestore, `users/${auth.currentUser?.uid}/favorites`, id);
+    await deleteDoc(favoriteRef);
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Favorite Events</Text>
       <FlatList
-        data={favoriteEvents}
+        data={favorites}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.eventCard}>
+          <View style={styles.eventCard}>
             <Text style={styles.eventTitle}>{item.title}</Text>
-            <Text style={styles.eventDate}>{item.date}</Text>
-          </TouchableOpacity>
+            <Button title="Remove Favorite" onPress={() => handleRemoveFavorite(item.id)} />
+          </View>
         )}
       />
     </View>
@@ -27,18 +48,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f8f9fa',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 16,
   },
   eventCard: {
-    backgroundColor: '#ffffff',
     padding: 16,
     marginBottom: 8,
+    backgroundColor: '#f9f9f9',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
@@ -46,9 +60,5 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  eventDate: {
-    fontSize: 14,
-    color: '#888',
   },
 });
