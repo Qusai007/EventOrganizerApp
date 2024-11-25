@@ -1,14 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import AuthStack from './navigation/AuthStack';
-import { AuthProvider } from './contexts/AuthContext';
+import MainStack from './navigation/MainStack';
+import { auth } from './firebase';
 
 export default function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+    });
+    return unsubscribe;
+  }, []);
+
   return (
-    <AuthProvider>
-      <NavigationContainer>
-        <AuthStack />
-      </NavigationContainer>
-    </AuthProvider>
+    <NavigationContainer>
+      {user ? <MainStack /> : <AuthStack />}
+    </NavigationContainer>
   );
 }
