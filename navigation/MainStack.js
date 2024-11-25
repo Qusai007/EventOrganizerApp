@@ -1,13 +1,22 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import EventListScreen from '../screens/EventListScreen';
-import FavoriteEventsScreen from '../screens/FavoriteEventsScreen';
 import { Button } from 'react-native';
 import { auth } from '../firebase';
+import EventListScreen from '../screens/EventListScreen';
+import FavoriteEventsScreen from '../screens/FavoriteEventsScreen';
 
 const Tab = createBottomTabNavigator();
 
-export default function MainStack() {
+export default function MainStack({ navigation }) {
+  const handleLogout = async () => {
+    try {
+      await auth.signOut(); // Signs out the user
+      navigation.replace('Auth'); // Navigates to the login screen
+    } catch (error) {
+      console.error('Logout Error:', error.message);
+    }
+  };
+
   return (
     <Tab.Navigator>
       <Tab.Screen
@@ -16,7 +25,7 @@ export default function MainStack() {
         options={{
           title: 'Events',
           headerRight: () => (
-            <Button title="Logout" onPress={() => auth.signOut()} />
+            <Button title="Logout" onPress={handleLogout} />
           ),
         }}
       />
@@ -26,7 +35,7 @@ export default function MainStack() {
         options={{
           title: 'Favorites',
           headerRight: () => (
-            <Button title="Logout" onPress={() => auth.signOut()} />
+            <Button title="Logout" onPress={handleLogout} />
           ),
         }}
       />
