@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Button, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { firestore, auth } from '../firebase';
 import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 
@@ -23,8 +23,8 @@ export default function FavoriteEventsScreen() {
   const handleRemoveFavorite = async (id) => {
     try {
       const favoriteRef = doc(firestore, `users/${auth.currentUser?.uid}/favorites`, id);
-      await deleteDoc(favoriteRef); // Deletes the favorite document
-      Alert.alert('Success', 'Event removed from favorites!');
+      await deleteDoc(favoriteRef);
+      Alert.alert('Success', 'Favorite removed successfully!');
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -34,11 +34,16 @@ export default function FavoriteEventsScreen() {
     <View style={styles.container}>
       <FlatList
         data={favorites}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.eventCard}>
             <Text style={styles.eventTitle}>{item.title}</Text>
-            <Button title="Remove Favorite" onPress={() => handleRemoveFavorite(item.id)} />
+            <TouchableOpacity
+              style={styles.removeButton}
+              onPress={() => handleRemoveFavorite(item.id)}
+            >
+              <Text style={styles.removeButtonText}>Remove Favorite</Text>
+            </TouchableOpacity>
           </View>
         )}
       />
@@ -50,17 +55,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: '#f8f9fa',
   },
   eventCard: {
     padding: 16,
     marginBottom: 8,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#ffffff',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
   },
   eventTitle: {
     fontSize: 18,
+    fontWeight: 'bold',
+  },
+  removeButton: {
+    marginTop: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#dc3545',
+    borderRadius: 6,
+  },
+  removeButtonText: {
+    color: '#fff',
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });
