@@ -34,7 +34,7 @@ export default function EventListScreen({ navigation }) {
       <Text style={styles.header}>Upcoming Events</Text>
       <FlatList
         data={events}
-        keyExtractor={(item) => item.id.toString()} // Ensure the key is unique
+        keyExtractor={(item) => item.id.toString()} // Ensure unique keys
         renderItem={({ item }) => (
           <View style={styles.eventCard}>
             <View style={styles.eventDetails}>
@@ -94,11 +94,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
   },
   eventDetails: {
     flex: 1,
