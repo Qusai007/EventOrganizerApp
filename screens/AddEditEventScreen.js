@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { firestore } from '../firebase';
-import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
+import React, { useState } from "react";
+import { View, TextInput, Button, StyleSheet, Text } from "react-native";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { firestore } from "../firebase";
+import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
+import { auth } from "../firebase";
 
 const AddEditEventScreen = ({ route, navigation }) => {
   const { eventId, isEditing } = route.params || {};
-  const [title, setTitle] = useState(route.params?.title || '');
-  const [description, setDescription] = useState(route.params?.description || '');
+  const [title, setTitle] = useState(route.params?.title || "");
+  const [description, setDescription] = useState(route.params?.description || "");
   const [date, setDate] = useState(route.params?.date || new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   const showDatePicker = () => setDatePickerVisibility(true);
   const hideDatePicker = () => setDatePickerVisibility(false);
+
   const handleConfirm = (selectedDate) => {
     setDate(selectedDate);
     hideDatePicker();
@@ -21,52 +23,76 @@ const AddEditEventScreen = ({ route, navigation }) => {
   const saveEvent = async () => {
     try {
       if (isEditing) {
-        const eventDoc = doc(firestore, 'events', eventId);
-        await updateDoc(eventDoc, { title, description, date: date.toISOString() });
+        await updateDoc(doc(firestore, "events", eventId), {
+          title,
+          description,
+          date: date.toISOString(),
+        });
       } else {
-        const eventsRef = collection(firestore, 'events');
-        await addDoc(eventsRef, { title, description, date: date.toISOString() });
+        await addDoc(collection(firestore, "events"), {
+          title,
+          description,
+          date: date.toISOString(),
+          userId: auth.currentUser.uid,
+        });
       }
       navigation.goBack();
     } catch (error) {
-      console.error('Error saving event:', error);
+      console.error("Error saving event:", error.message);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{isEditing ? 'Edit Event' : 'Add Event'}</Text>
+      <Text style={styles.header}>{isEditing ? "Edit Event" : "Add Event"}</Text>
       <TextInput
+        style={styles.input}
         placeholder="Title"
         value={title}
         onChangeText={setTitle}
-        style={styles.input}
       />
       <TextInput
+        style={styles.input}
         placeholder="Description"
         value={description}
         onChangeText={setDescription}
-        style={styles.input}
       />
-      <Text onPress={showDatePicker} style={styles.dateText}>
-        {date.toDateString()}
-      </Text>
+      <Button title="Pick Date" onPress={showDatePicker} />
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"
         onConfirm={handleConfirm}
         onCancel={hideDatePicker}
       />
+      <Text style={styles.dateText}>Selected Date: {date.toDateString()}</Text>
       <Button title="Save" onPress={saveEvent} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 16 },
-  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
-  input: { borderWidth: 1, marginBottom: 8, padding: 8, borderRadius: 4 },
-  dateText: { fontSize: 16, color: 'blue', marginBottom: 8 },
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 16,
+    backgroundColor: "#fff",
+  },
+  dateText: {
+    fontSize: 16,
+    color: "#333",
+  },
 });
 
 export default AddEditEventScreen;
