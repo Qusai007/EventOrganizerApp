@@ -1,85 +1,61 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { firestore, auth } from '../firebase';
-import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { View, FlatList, Text, Button, StyleSheet } from 'react-native';
+import { firestore } from '../firebase';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
-export default function FavoriteEventsScreen() {
+const FavoriteEventsScreen = () => {
   const [favorites, setFavorites] = useState([]);
 
-  useEffect(() => {
-    const userFavoritesRef = collection(firestore, `users/${auth.currentUser?.uid}/favorites`);
-
-    const unsubscribe = onSnapshot(userFavoritesRef, (snapshot) => {
-      const fetchedFavorites = snapshot.docs.map((doc) => ({
+  const fetchFavorites = async () => {
+    try {
+      const favoritesRef = collection(firestore, 'favorites');
+      const querySnapshot = await getDocs(favoritesRef);
+      const favoriteData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setFavorites(fetchedFavorites);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  const handleRemoveFavorite = async (id) => {
-    try {
-      const favoriteRef = doc(firestore, `users/${auth.currentUser?.uid}/favorites`, id);
-      await deleteDoc(favoriteRef);
-      setFavorites((prevFavorites) => prevFavorites.filter((item) => item.id !== id));
-      Alert.alert('Success', 'Favorite removed successfully!');
+      setFavorites(favoriteData);
     } catch (error) {
-      Alert.alert('Error', error.message);
+      console.error('Error fetching favorites:', error);
     }
   };
 
+  const removeFavorite = async (id) => {
+    try {
+      const favoriteDoc = doc(firestore, 'favorites', id);
+      await deleteDoc(favoriteDoc);
+      fetchFavorites();
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFavorites();
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={favorites}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.eventCard}>
-            <Text style={styles.eventTitle}>{item.title}</Text>
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => handleRemoveFavorite(item.id)}
-            >
-              <Text style={styles.removeButtonText}>Remove Favorite</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
-    </View>
+    <FlatList
+      data={favorites}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => (
+        <View style={styles.card}>
+          <Text style={styles.title}>{item.title}</Text>
+          <Button title="Remove Favorite" onPress={() => removeFavorite(item.id)} />
+        </View>
+      )}
+    />
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  card: {
     padding: 16,
-    backgroundColor: '#f8f9fa',
-  },
-  eventCard: {
-    padding: 16,
-    marginBottom: 8,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderRadius: 4,
+    marginBottom: 8,
   },
-  eventTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  removeButton: {
-    marginTop: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: '#dc3545',
-    borderRadius: 6,
-  },
-  removeButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
+  title: { fontSize: 18, fontWeight: 'bold' },
 });
+
+export default FavoriteEventsScreen;
