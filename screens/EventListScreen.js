@@ -1,33 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import { auth, firestore } from '../firebase';
-import { collection, query, onSnapshot, addDoc, doc, deleteDoc } from 'firebase/firestore';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { firestore } from '../firebase';
+import { collection, onSnapshot, query } from 'firebase/firestore';
 
 export default function EventListScreen({ navigation }) {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
     const q = query(collection(firestore, 'events'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedEvents = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setEvents(fetchedEvents);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const fetchedEvents = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log('Fetched Events:', fetchedEvents); // Debugging
+        setEvents(fetchedEvents);
+      },
+      (error) => {
+        console.error('Firestore Error:', error.message); // Debugging Firestore error
+        Alert.alert('Error', error.message);
+      }
+    );
 
     return unsubscribe; // Cleanup listener
   }, []);
-
-  const handleAddToFavorites = async (event) => {
-    try {
-      const favoritesRef = collection(firestore, `users/${auth.currentUser?.uid}/favorites`);
-      await addDoc(favoritesRef, event);
-      Alert.alert('Success', 'Event added to favorites!');
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -38,14 +36,6 @@ export default function EventListScreen({ navigation }) {
           <View style={styles.eventCard}>
             <Text style={styles.eventTitle}>{item.title}</Text>
             <Text>{item.date}</Text>
-            <Button
-              title="Favorite"
-              onPress={() => handleAddToFavorites(item)}
-            />
-            <Button
-              title="Edit"
-              onPress={() => navigation.navigate('AddEditEvent', { event: item, eventId: item.id })}
-            />
           </View>
         )}
       />
