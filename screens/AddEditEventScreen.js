@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { firestore, auth } from '../firebase';
 import { addDoc, collection, updateDoc, doc } from 'firebase/firestore';
 
@@ -10,21 +10,26 @@ export default function AddEditEventScreen({ route, navigation }) {
   const [date, setDate] = useState(event?.date || '');
 
   const handleSave = async () => {
-    if (eventId) {
-      // Update existing event
-      const eventRef = doc(firestore, 'events', eventId);
-      await updateDoc(eventRef, { title, description, date });
-    } else {
-      // Add new event
-      const eventsRef = collection(firestore, 'events');
-      await addDoc(eventsRef, {
-        title,
-        description,
-        date,
-        createdBy: auth.currentUser?.uid,
-      });
+    try {
+      if (eventId) {
+        // Update existing event
+        const eventRef = doc(firestore, 'events', eventId);
+        await updateDoc(eventRef, { title, description, date });
+      } else {
+        // Add new event
+        const eventsRef = collection(firestore, 'events');
+        await addDoc(eventsRef, {
+          title,
+          description,
+          date,
+          createdBy: auth.currentUser?.uid, // Save the creator's UID
+        });
+      }
+      Alert.alert('Success', 'Event saved successfully!');
+      navigation.goBack();
+    } catch (error) {
+      Alert.alert('Error', error.message);
     }
-    navigation.goBack();
   };
 
   return (
