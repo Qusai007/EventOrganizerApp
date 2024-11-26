@@ -42,7 +42,13 @@ const FavoriteEventsScreen = () => {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.date}>{item.date}</Text>
+            <Text style={styles.date}>
+                {item.date && item.date.seconds
+                ? new Date(item.date.seconds * 1000).toDateString() // Firestore Timestamp
+                : item.date
+                ? new Date(item.date).toDateString() // String date
+                : "Invalid Date"}
+            </Text>
             <TouchableOpacity onPress={() => removeFavorite(item.id)}>
               <Text style={styles.removeButton}>Remove Favorite</Text>
             </TouchableOpacity>

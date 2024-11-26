@@ -8,24 +8,25 @@ import {
   Alert,
   TouchableOpacity,
 } from "react-native";
-import { collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, deleteDoc } from "firebase/firestore";
 import { firestore, auth } from "../firebase";
 
 const EventListScreen = ({ navigation }) => {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      const eventsRef = collection(firestore, "events");
-      const snapshot = await getDocs(eventsRef);
+    // Real-time updates for the "events" collection
+    const eventsRef = collection(firestore, "events");
+    const unsubscribe = onSnapshot(eventsRef, (snapshot) => {
       const eventList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setEvents(eventList);
-    };
+    });
 
-    fetchEvents();
+    // Cleanup listener on unmount
+    return () => unsubscribe();
   }, []);
 
   const addToFavorites = async (eventId, event) => {
@@ -41,6 +42,7 @@ const EventListScreen = ({ navigation }) => {
       alert("Added to Favorites!");
     } catch (error) {
       console.error("Error adding to favorites:", error);
+      Alert.alert("Error", "Failed to add to favorites.");
     }
   };
 
@@ -48,10 +50,10 @@ const EventListScreen = ({ navigation }) => {
     try {
       const eventRef = doc(firestore, "events", eventId);
       await deleteDoc(eventRef);
-      setEvents((prev) => prev.filter((event) => event.id !== eventId));
       alert("Event deleted successfully!");
     } catch (error) {
       console.error("Error deleting event:", error);
+      Alert.alert("Error", "Failed to delete event.");
     }
   };
 
@@ -64,7 +66,13 @@ const EventListScreen = ({ navigation }) => {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.date}>{item.date}</Text>
+            <Text style={styles.date}>
+                {item.date && item.date.seconds
+                ? new Date(item.date.seconds * 1000).toDateString() // Firestore Timestamp
+                : item.date
+                ? new Date(item.date).toDateString() // String date
+                : "Invalid Date"}
+            </Text>
             <TouchableOpacity
               onPress={() => navigation.navigate("AddEditEvent", { event: item })}
             >
@@ -78,6 +86,7 @@ const EventListScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         )}
+        ListEmptyComponent={<Text>No events available.</Text>}
       />
       <Button title="Add Event" onPress={() => navigation.navigate("AddEditEvent")} />
     </View>
@@ -87,7 +96,7 @@ const EventListScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
   header: { fontSize: 24, fontWeight: "bold", textAlign: "center" },
-  card: { padding: 10, borderWidth: 1, marginBottom: 10 },
+  card: { padding: 10, borderWidth: 1, marginBottom: 10, borderRadius: 5 },
   title: { fontSize: 18, fontWeight: "bold" },
   date: { fontSize: 16, color: "#555" },
   editButton: { color: "blue", marginTop: 5 },
