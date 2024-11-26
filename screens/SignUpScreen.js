@@ -20,6 +20,7 @@ export default function SignUpScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Create an Account</Text>
+      <Text style={styles.subtitle}>Sign up to get started</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -36,11 +37,13 @@ export default function SignUpScreen({ navigation }) {
         onChangeText={setPassword}
         placeholderTextColor="#aaa"
       />
-      <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
-        <Text style={styles.signUpButtonText}>Sign Up</Text>
+      <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+        <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.backButtonText}>Back to Login</Text>
+      <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('Login')}>
+        <Text style={styles.linkText}>
+          Already have an account? <Text style={styles.highlightText}>Login</Text>
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -51,13 +54,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#282c34',
+    backgroundColor: '#1c1c1e',
     padding: 20,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#FFD700',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#aaa',
     marginBottom: 20,
   },
   input: {
@@ -67,10 +75,10 @@ const styles = StyleSheet.create({
     borderColor: '#444',
     borderRadius: 10,
     marginBottom: 15,
-    backgroundColor: '#444',
+    backgroundColor: '#333',
     color: '#fff',
   },
-  signUpButton: {
+  button: {
     backgroundColor: '#FFD700',
     padding: 15,
     borderRadius: 10,
@@ -78,22 +86,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 15,
   },
-  signUpButtonText: {
+  buttonText: {
     color: '#000',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  backButton: {
-    borderColor: '#FFD700',
-    borderWidth: 1,
-    padding: 15,
-    borderRadius: 10,
-    width: '100%',
-    alignItems: 'center',
+  linkButton: {
+    marginTop: 10,
   },
-  backButtonText: {
+  linkText: {
+    color: '#aaa',
+    fontSize: 14,
+  },
+  highlightText: {
     color: '#FFD700',
-    fontSize: 16,
     fontWeight: 'bold',
   },
 });
