@@ -1,69 +1,43 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { addDoc, collection } from "firebase/firestore";
 import { firestore } from "../firebase";
-import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
 
-const AddEditEventScreen = ({ route, navigation }) => {
-  const event = route.params?.event || {};
-  const isEditing = !!route.params?.event;
+export default function AddEditEventScreen({ route, navigation }) {
+  const [title, setTitle] = useState(route.params?.event?.title || "");
+  const [date, setDate] = useState(route.params?.event?.date || "");
 
-  const [title, setTitle] = useState(event.title || "");
-  const [date, setDate] = useState(event.date || new Date().toISOString());
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-
-  const showDatePicker = () => setDatePickerVisibility(true);
-  const hideDatePicker = () => setDatePickerVisibility(false);
-
-  const handleConfirm = (selectedDate) => {
-    setDate(selectedDate.toISOString());
-    hideDatePicker();
-  };
-
-  const saveEvent = async () => {
+  const handleSave = async () => {
     try {
-      if (isEditing) {
-        const eventRef = doc(firestore, "events", event.id);
-        await updateDoc(eventRef, { title, date });
-        alert("Event updated!");
-      } else {
-        const eventsRef = collection(firestore, "events");
-        await addDoc(eventsRef, { title, date });
-        alert("Event added!");
-      }
+      await addDoc(collection(firestore, "events"), { title, date });
       navigation.goBack();
     } catch (error) {
-      console.error("Error saving event:", error);
+      alert("Failed to save event.");
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{isEditing ? "Edit Event" : "Add Event"}</Text>
+      <Text style={styles.title}>Add/Edit Event</Text>
       <TextInput
+        style={styles.input}
+        placeholder="Title"
         value={title}
         onChangeText={setTitle}
-        placeholder="Title"
+      />
+      <TextInput
         style={styles.input}
+        placeholder="Date"
+        value={date}
+        onChangeText={setDate}
       />
-      <Button title="Pick Date" onPress={showDatePicker} />
-      <Text style={styles.dateText}>{new Date(date).toDateString()}</Text>
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="date"
-        onConfirm={handleConfirm}
-        onCancel={hideDatePicker}
-      />
-      <Button title="Save" onPress={saveEvent} />
+      <Button title="Save" onPress={handleSave} />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
-  header: { fontSize: 24, fontWeight: "bold", textAlign: "center" },
-  input: { borderWidth: 1, padding: 10, marginBottom: 10 },
-  dateText: { fontSize: 16, marginVertical: 10 },
+  title: { fontSize: 24, textAlign: "center" },
+  input: { borderWidth: 1, marginBottom: 10, padding: 10 },
 });
-
-export default AddEditEventScreen;
