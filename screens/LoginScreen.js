@@ -1,119 +1,105 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from "react-native";
-import { auth } from "../firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { LinearGradient } from "expo-linear-gradient";
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { auth } from '../firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      Alert.alert("Success", "Logged in successfully!");
-      navigation.navigate("Main");
+      Alert.alert('Success', 'Logged in successfully!');
+      navigation.navigate('Main');
     } catch (error) {
-      Alert.alert("Error", "Invalid email or password.");
+      Alert.alert('Error', 'Invalid email or password.');
     }
   };
 
   return (
-    <LinearGradient
-      colors={["#4c669f", "#3b5998", "#192f6a"]}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <Text style={styles.title}>Welcome Back!</Text>
-      <Text style={styles.subtitle}>Login to your account</Text>
+      <Text style={styles.subtitle}>Login to continue</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor="#ccc"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
+        placeholderTextColor="#aaa"
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor="#ccc"
         value={password}
         secureTextEntry
         onChangeText={setPassword}
+        placeholderTextColor="#aaa"
       />
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginButtonText}>Login</Text>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.signupLink}
-        onPress={() => navigation.navigate("SignUp")}
-      >
-        <Text style={styles.signupText}>
-          Don't have an account?{" "}
-          <Text style={styles.signupTextHighlight}>Sign Up</Text>
+      <TouchableOpacity style={styles.linkButton} onPress={() => navigation.navigate('SignUp')}>
+        <Text style={styles.linkText}>
+          Don't have an account? <Text style={styles.highlightText}>Sign Up</Text>
         </Text>
       </TouchableOpacity>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#1c1c1e',
     padding: 20,
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
-    color: "#fff",
+    fontWeight: 'bold',
+    color: '#FFD700',
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 18,
-    color: "#ddd",
-    marginBottom: 30,
-  },
-  input: {
-    width: "90%",
-    height: 50,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    marginBottom: 15,
-    color: "#fff",
     fontSize: 16,
-  },
-  loginButton: {
-    backgroundColor: "#FFD700",
-    paddingVertical: 15,
-    width: "90%",
-    borderRadius: 25,
-    alignItems: "center",
+    color: '#aaa',
     marginBottom: 20,
   },
-  loginButtonText: {
-    color: "#000",
-    fontSize: 18,
-    fontWeight: "bold",
+  input: {
+    width: '100%',
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#444',
+    borderRadius: 10,
+    marginBottom: 15,
+    backgroundColor: '#333',
+    color: '#fff',
   },
-  signupLink: {
+  button: {
+    backgroundColor: '#FFD700',
+    padding: 15,
+    borderRadius: 10,
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  buttonText: {
+    color: '#000',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  linkButton: {
     marginTop: 10,
   },
-  signupText: {
-    color: "#fff",
-    fontSize: 16,
+  linkText: {
+    color: '#aaa',
+    fontSize: 14,
   },
-  signupTextHighlight: {
-    color: "#FFD700",
-    fontWeight: "bold",
+  highlightText: {
+    color: '#FFD700',
+    fontWeight: 'bold',
   },
 });
