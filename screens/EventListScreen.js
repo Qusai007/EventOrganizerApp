@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  FlatList,
-  TouchableOpacity,
+  Button,
   StyleSheet,
+  FlatList,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import { collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 import { firestore, auth } from "../firebase";
@@ -35,10 +36,7 @@ const EventListScreen = ({ navigation }) => {
         return;
       }
 
-      const favoritesRef = doc(
-        collection(firestore, `users/${userId}/favorites`),
-        eventId
-      );
+      const favoritesRef = doc(collection(firestore, `users/${userId}/favorites`), eventId);
       await setDoc(favoritesRef, event);
       alert("Added to Favorites!");
     } catch (error) {
@@ -57,46 +55,59 @@ const EventListScreen = ({ navigation }) => {
     }
   };
 
+  const handleLogout = () => {
+    auth.signOut()
+      .then(() => {
+        navigation.navigate("Login");
+      })
+      .catch((error) => {
+        Alert.alert("Error", "Failed to log out.");
+        console.error(error);
+      });
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Upcoming Events</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Events</Text>
+        <TouchableOpacity onPress={handleLogout}>
+          <Text style={styles.logoutButton}>Logout</Text>
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.title}>Upcoming Events</Text>
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.date}>
-              {item.date ? new Date(item.date).toDateString() : "Invalid Date"}
-            </Text>
+            <Text style={styles.eventTitle}>{item.title}</Text>
+            <Text style={styles.eventDate}>{item.date}</Text>
             <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() =>
-                navigation.navigate("AddEditEvent", { event: item })
-              }
+              style={styles.editButton}
+              onPress={() => navigation.navigate("AddEditEvent", { event: item })}
             >
-              <Text style={styles.actionText}>Edit</Text>
+              <Text style={styles.buttonText}>Edit</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: "#FF3B30" }]}
+              style={styles.deleteButton}
               onPress={() => deleteEvent(item.id)}
             >
-              <Text style={styles.actionText}>Delete</Text>
+              <Text style={styles.buttonText}>Delete</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: "#34C759" }]}
+              style={styles.favButton}
               onPress={() => addToFavorites(item.id, item)}
             >
-              <Text style={styles.actionText}>Add to Favorites</Text>
+              <Text style={styles.buttonText}>Add to Favorites</Text>
             </TouchableOpacity>
           </View>
         )}
       />
       <TouchableOpacity
-        style={styles.addEventButton}
+        style={styles.addButton}
         onPress={() => navigation.navigate("AddEditEvent")}
       >
-        <Text style={styles.addEventButtonText}>Add Event</Text>
+        <Text style={styles.buttonText}>Add Event</Text>
       </TouchableOpacity>
     </View>
   );
@@ -105,57 +116,81 @@ const EventListScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#1c1c1e",
+    backgroundColor: "#121212",
+    padding: 10,
   },
   header: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#FFD700",
-    textAlign: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
   },
-  card: {
-    backgroundColor: "#333",
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#444",
+  headerText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#FFD700",
+  },
+  logoutButton: {
+    fontSize: 16,
+    color: "#FFD700",
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#FFD700",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  card: {
+    backgroundColor: "#1E1E1E",
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+  },
+  eventTitle: {
+    fontSize: 18,
     fontWeight: "bold",
     color: "#FFD700",
     marginBottom: 5,
   },
-  date: {
+  eventDate: {
     fontSize: 16,
-    color: "#aaa",
+    color: "#FFF",
     marginBottom: 10,
   },
-  actionButton: {
+  editButton: {
+    backgroundColor: "#007BFF",
     padding: 10,
-    borderRadius: 8,
-    marginTop: 5,
-    alignItems: "center",
-    backgroundColor: "#007AFF",
+    borderRadius: 5,
+    marginBottom: 5,
   },
-  actionText: {
-    color: "#fff",
-    fontWeight: "bold",
+  deleteButton: {
+    backgroundColor: "#FF4136",
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 5,
   },
-  addEventButton: {
+  favButton: {
+    backgroundColor: "#2ECC40",
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 5,
+  },
+  addButton: {
     backgroundColor: "#FFD700",
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 10,
   },
-  addEventButtonText: {
-    color: "#000",
-    fontSize: 18,
+  buttonText: {
+    color: "#FFF",
     fontWeight: "bold",
+    textAlign: "center",
   },
 });
 
