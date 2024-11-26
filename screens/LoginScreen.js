@@ -13,7 +13,7 @@ export default function LoginScreen({ navigation }) {
       Alert.alert('Success', 'Logged in successfully!');
       navigation.navigate('Main');
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', 'Invalid email or password.');
     }
   };
 
