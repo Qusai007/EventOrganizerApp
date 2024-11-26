@@ -2,31 +2,29 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  Button,
-  StyleSheet,
   FlatList,
-  Alert,
   TouchableOpacity,
+  StyleSheet,
+  Alert,
 } from "react-native";
-import { collection, onSnapshot, doc, setDoc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 import { firestore, auth } from "../firebase";
 
 const EventListScreen = ({ navigation }) => {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    // Real-time updates for the "events" collection
-    const eventsRef = collection(firestore, "events");
-    const unsubscribe = onSnapshot(eventsRef, (snapshot) => {
+    const fetchEvents = async () => {
+      const eventsRef = collection(firestore, "events");
+      const snapshot = await getDocs(eventsRef);
       const eventList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setEvents(eventList);
-    });
+    };
 
-    // Cleanup listener on unmount
-    return () => unsubscribe();
+    fetchEvents();
   }, []);
 
   const addToFavorites = async (eventId, event) => {
@@ -37,12 +35,14 @@ const EventListScreen = ({ navigation }) => {
         return;
       }
 
-      const favoritesRef = doc(collection(firestore, `users/${userId}/favorites`), eventId);
+      const favoritesRef = doc(
+        collection(firestore, `users/${userId}/favorites`),
+        eventId
+      );
       await setDoc(favoritesRef, event);
       alert("Added to Favorites!");
     } catch (error) {
       console.error("Error adding to favorites:", error);
-      Alert.alert("Error", "Failed to add to favorites.");
     }
   };
 
@@ -50,10 +50,10 @@ const EventListScreen = ({ navigation }) => {
     try {
       const eventRef = doc(firestore, "events", eventId);
       await deleteDoc(eventRef);
+      setEvents((prev) => prev.filter((event) => event.id !== eventId));
       alert("Event deleted successfully!");
     } catch (error) {
       console.error("Error deleting event:", error);
-      Alert.alert("Error", "Failed to delete event.");
     }
   };
 
@@ -67,41 +67,96 @@ const EventListScreen = ({ navigation }) => {
           <View style={styles.card}>
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.date}>
-                {item.date && item.date.seconds
-                ? new Date(item.date.seconds * 1000).toDateString() // Firestore Timestamp
-                : item.date
-                ? new Date(item.date).toDateString() // String date
-                : "Invalid Date"}
+              {item.date ? new Date(item.date).toDateString() : "Invalid Date"}
             </Text>
             <TouchableOpacity
-              onPress={() => navigation.navigate("AddEditEvent", { event: item })}
+              style={styles.actionButton}
+              onPress={() =>
+                navigation.navigate("AddEditEvent", { event: item })
+              }
             >
-              <Text style={styles.editButton}>Edit</Text>
+              <Text style={styles.actionText}>Edit</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => deleteEvent(item.id)}>
-              <Text style={styles.deleteButton}>Delete</Text>
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: "#FF3B30" }]}
+              onPress={() => deleteEvent(item.id)}
+            >
+              <Text style={styles.actionText}>Delete</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => addToFavorites(item.id, item)}>
-              <Text style={styles.favButton}>Add to Favorites</Text>
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: "#34C759" }]}
+              onPress={() => addToFavorites(item.id, item)}
+            >
+              <Text style={styles.actionText}>Add to Favorites</Text>
             </TouchableOpacity>
           </View>
         )}
-        ListEmptyComponent={<Text>No events available.</Text>}
       />
-      <Button title="Add Event" onPress={() => navigation.navigate("AddEditEvent")} />
+      <TouchableOpacity
+        style={styles.addEventButton}
+        onPress={() => navigation.navigate("AddEditEvent")}
+      >
+        <Text style={styles.addEventButtonText}>Add Event</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  header: { fontSize: 24, fontWeight: "bold", textAlign: "center" },
-  card: { padding: 10, borderWidth: 1, marginBottom: 10, borderRadius: 5 },
-  title: { fontSize: 18, fontWeight: "bold" },
-  date: { fontSize: 16, color: "#555" },
-  editButton: { color: "blue", marginTop: 5 },
-  deleteButton: { color: "red", marginTop: 5 },
-  favButton: { color: "green", marginTop: 5 },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#1c1c1e",
+  },
+  header: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#FFD700",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  card: {
+    backgroundColor: "#333",
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#444",
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#FFD700",
+    marginBottom: 5,
+  },
+  date: {
+    fontSize: 16,
+    color: "#aaa",
+    marginBottom: 10,
+  },
+  actionButton: {
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 5,
+    alignItems: "center",
+    backgroundColor: "#007AFF",
+  },
+  actionText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  addEventButton: {
+    backgroundColor: "#FFD700",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  addEventButtonText: {
+    color: "#000",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
 });
 
 export default EventListScreen;
