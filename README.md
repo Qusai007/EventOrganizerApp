@@ -38,9 +38,9 @@ A sleek and intuitive event management app built with React Native. This app all
 ## 📸 Screenshots  
 
 - **Event List Screen**: Explore and manage events.  
-![Transactions Screen](./assets/eventListScreen.png.png)
+![Transactions Screen](./assets/eventListScreen.png)
 - **Favorite Events Screen**: View and organize favorite events. 
-![Transactions Screen](./assets/favoriteEventScreen.png.png) 
+![Transactions Screen](./assets/favoriteEventScreen.png) 
 - **Add/Edit Event Screen**: Add or edit events effortlessly.  
 ![Transactions Screen](./assets/editEventScreen.png)
 - **Authentication Screens**: Sign up or log in with an intuitive interface. 
