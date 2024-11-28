@@ -43,7 +43,7 @@ const FavoriteEventsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Favorites</Text>
+      <Text style={styles.header}>Your Favorite Events</Text>
       <FlatList
         data={favorites}
         keyExtractor={(item) => item.id}
@@ -51,7 +51,7 @@ const FavoriteEventsScreen = () => {
           <View style={styles.card}>
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.date}>
-                {item.date && item.date.seconds
+              {item.date && item.date.seconds
                 ? new Date(item.date.seconds * 1000).toDateString() // Firestore Timestamp
                 : item.date
                 ? new Date(item.date).toDateString() // String date
@@ -110,8 +110,8 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   removeButton: {
-    backgroundColor: "#FF6347",
-    padding: 10,
+    backgroundColor: "#FF4500",
+    padding: 12,
     borderRadius: 8,
     alignItems: "center",
     marginTop: 10,

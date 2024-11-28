@@ -14,8 +14,14 @@ const EventListScreen = ({ navigation }) => {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    // Real-time updates for the "events" collection
-    const eventsRef = collection(firestore, "events");
+    const userId = auth.currentUser?.uid;
+    if (!userId) {
+      Alert.alert("Error", "You must be logged in to view events.");
+      return;
+    }
+
+    // Real-time updates for the user's "events" collection
+    const eventsRef = collection(firestore, `users/${userId}/events`);
     const unsubscribe = onSnapshot(eventsRef, (snapshot) => {
       const eventList = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -47,7 +53,8 @@ const EventListScreen = ({ navigation }) => {
 
   const deleteEvent = async (eventId) => {
     try {
-      const eventRef = doc(firestore, "events", eventId);
+      const userId = auth.currentUser?.uid;
+      const eventRef = doc(firestore, `users/${userId}/events`, eventId);
       await deleteDoc(eventRef);
       Alert.alert("Success", "Event deleted successfully!");
     } catch (error) {
@@ -78,7 +85,7 @@ const EventListScreen = ({ navigation }) => {
           <View style={styles.card}>
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.date}>
-                {item.date && item.date.seconds
+              {item.date && item.date.seconds
                 ? new Date(item.date.seconds * 1000).toDateString() // Firestore Timestamp
                 : item.date
                 ? new Date(item.date).toDateString() // String date

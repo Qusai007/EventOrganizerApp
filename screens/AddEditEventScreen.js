@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { firestore } from "../firebase";
+import { firestore, auth } from "../firebase"; // Added auth import
 import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
 
 const AddEditEventScreen = ({ route, navigation }) => {
@@ -28,6 +28,12 @@ const AddEditEventScreen = ({ route, navigation }) => {
 
   const saveEvent = async () => {
     try {
+      const userId = auth.currentUser?.uid;
+      if (!userId) {
+        alert("You must be logged in to add events.");
+        return;
+      }
+
       if (!title.trim()) {
         alert("Please provide a title for the event.");
         return;
@@ -37,12 +43,13 @@ const AddEditEventScreen = ({ route, navigation }) => {
         return;
       }
 
+      const eventsRef = collection(firestore, `users/${userId}/events`);
+
       if (isEditing) {
-        const eventRef = doc(firestore, "events", event.id);
+        const eventRef = doc(eventsRef, event.id);
         await updateDoc(eventRef, { title, date });
         alert("Event updated!");
       } else {
-        const eventsRef = collection(firestore, "events");
         await addDoc(eventsRef, { title, date });
         alert("Event added!");
       }
