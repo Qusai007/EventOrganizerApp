@@ -1,43 +1,130 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import { addDoc, collection } from "firebase/firestore";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { firestore } from "../firebase";
+import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
 
-export default function AddEditEventScreen({ route, navigation }) {
-  const [title, setTitle] = useState(route.params?.event?.title || "");
-  const [date, setDate] = useState(route.params?.event?.date || "");
+const AddEditEventScreen = ({ route, navigation }) => {
+  const event = route.params?.event || {};
+  const isEditing = !!route.params?.event;
 
-  const handleSave = async () => {
+  const [title, setTitle] = useState(event.title || "");
+  const [date, setDate] = useState(event.date || new Date().toISOString());
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+  const showDatePicker = () => setDatePickerVisibility(true);
+  const hideDatePicker = () => setDatePickerVisibility(false);
+
+  const handleConfirm = (selectedDate) => {
+    setDate(selectedDate.toISOString());
+    hideDatePicker();
+  };
+
+  const saveEvent = async () => {
     try {
-      await addDoc(collection(firestore, "events"), { title, date });
+      if (!title.trim()) {
+        alert("Please provide a title for the event.");
+        return;
+      }
+      if (!date) {
+        alert("Please select a date for the event.");
+        return;
+      }
+
+      if (isEditing) {
+        const eventRef = doc(firestore, "events", event.id);
+        await updateDoc(eventRef, { title, date });
+        alert("Event updated!");
+      } else {
+        const eventsRef = collection(firestore, "events");
+        await addDoc(eventsRef, { title, date });
+        alert("Event added!");
+      }
       navigation.goBack();
     } catch (error) {
-      alert("Failed to save event.");
+      console.error("Error saving event:", error);
+      alert("An error occurred while saving the event.");
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Add/Edit Event</Text>
+      <Text style={styles.header}>{isEditing ? "Edit Event" : "Add Event"}</Text>
       <TextInput
-        style={styles.input}
-        placeholder="Title"
         value={title}
         onChangeText={setTitle}
-      />
-      <TextInput
+        placeholder="Enter Event Title"
         style={styles.input}
-        placeholder="Date"
-        value={date}
-        onChangeText={setDate}
       />
-      <Button title="Save" onPress={handleSave} />
+      <TouchableOpacity style={styles.dateButton} onPress={showDatePicker}>
+        <Text style={styles.dateButtonText}>
+          {date ? new Date(date).toDateString() : "Select Date"}
+        </Text>
+      </TouchableOpacity>
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}
+        mode="date"
+        onConfirm={handleConfirm}
+        onCancel={hideDatePicker}
+      />
+      <TouchableOpacity style={styles.saveButton} onPress={saveEvent}>
+        <Text style={styles.saveButtonText}>Save Event</Text>
+      </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  title: { fontSize: 24, textAlign: "center" },
-  input: { borderWidth: 1, marginBottom: 10, padding: 10 },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#F8F9FA",
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
+    color: "#333",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#CCC",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 20,
+    backgroundColor: "#FFF",
+    fontSize: 16,
+  },
+  dateButton: {
+    backgroundColor: "#FF4500",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  dateButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  saveButton: {
+    backgroundColor: "#32CD32",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  saveButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
+
+export default AddEditEventScreen;

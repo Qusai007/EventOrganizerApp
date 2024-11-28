@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
 import { collection, doc, onSnapshot, deleteDoc } from "firebase/firestore";
 import { firestore, auth } from "../firebase";
 
@@ -27,9 +34,10 @@ const FavoriteEventsScreen = () => {
       const userId = auth.currentUser?.uid;
       const favoriteRef = doc(firestore, `users/${userId}/favorites`, eventId);
       await deleteDoc(favoriteRef);
-      alert("Removed from favorites!");
+      Alert.alert("Success", "Event removed from favorites!");
     } catch (error) {
       console.error("Error removing favorite:", error);
+      Alert.alert("Error", "Failed to remove the favorite.");
     }
   };
 
@@ -49,23 +57,76 @@ const FavoriteEventsScreen = () => {
                 ? new Date(item.date).toDateString() // String date
                 : "Invalid Date"}
             </Text>
-            <TouchableOpacity onPress={() => removeFavorite(item.id)}>
-              <Text style={styles.removeButton}>Remove Favorite</Text>
+            <TouchableOpacity
+              style={styles.removeButton}
+              onPress={() => removeFavorite(item.id)}
+            >
+              <Text style={styles.removeButtonText}>Remove Favorite</Text>
             </TouchableOpacity>
           </View>
         )}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No favorite events found.</Text>
+        }
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  header: { fontSize: 24, fontWeight: "bold", textAlign: "center" },
-  card: { padding: 10, borderWidth: 1, marginBottom: 10 },
-  title: { fontSize: 18, fontWeight: "bold" },
-  date: { fontSize: 16, color: "#555" },
-  removeButton: { color: "red", marginTop: 5 },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#F8F9FA",
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
+    color: "#333",
+  },
+  card: {
+    backgroundColor: "#FFF",
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    borderColor: "#CCC",
+    borderWidth: 1,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  date: {
+    fontSize: 16,
+    color: "#555",
+    marginVertical: 5,
+  },
+  removeButton: {
+    backgroundColor: "#FF6347",
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  removeButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  emptyText: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#888",
+    marginTop: 20,
+  },
 });
 
 export default FavoriteEventsScreen;
