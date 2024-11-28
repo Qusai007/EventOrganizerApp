@@ -1,7 +1,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
-import { Ionicons } from "@expo/vector-icons"; // Import Ionicons for icons
+import { Ionicons } from "@expo/vector-icons"; 
 import EventListScreen from "../screens/EventListScreen";
 import FavoriteEventsScreen from "../screens/FavoriteEventsScreen";
 import AddEditEventScreen from "../screens/AddEditEventScreen";
@@ -15,7 +15,7 @@ function EventStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="EventList"
+        name="Event List"
         component={EventListScreen}
         options={{
           headerRight: () => (

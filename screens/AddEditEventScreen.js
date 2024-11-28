@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { firestore, auth } from "../firebase"; // Added auth import
+import { firestore, auth } from "../firebase";
 import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
 
 const AddEditEventScreen = ({ route, navigation }) => {

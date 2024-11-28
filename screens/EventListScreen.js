@@ -86,9 +86,9 @@ const EventListScreen = ({ navigation }) => {
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.date}>
               {item.date && item.date.seconds
-                ? new Date(item.date.seconds * 1000).toDateString() // Firestore Timestamp
+                ? new Date(item.date.seconds * 1000).toDateString() 
                 : item.date
-                ? new Date(item.date).toDateString() // String date
+                ? new Date(item.date).toDateString()
                 : "Invalid Date"}
             </Text>
             <TouchableOpacity
